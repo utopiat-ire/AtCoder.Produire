@@ -1,0 +1,377 @@
+//https://github.com/utopiat-ire/AtCoder.Produire
+※コンソール
+※コンパイル
+【mod:整数】=998244353
+コンソールで聞いて「 」で区切って{【N：整数】,【K：整数】}とみなす
+
+【nn】=10 ^ 6
+【inv】=長整数の配列(nn+1)を作ったもの
+invを1で埋める
+【a:長整数】に2からnnまでカウントして繰り返す
+	【res:長整数】=(mod-inv#[mod%a])*(mod￥a)
+	inv#[a]=res%mod
+そして
+
+fact=長整数の配列(nn+1)を作ったもの
+factを1で埋める
+【i】に1からnnまでカウントして繰り返す
+	fact#[i]=(fact#[i-1]*i)%mod
+そして
+
+fact_inv=長整数の配列(nn+1)を作ったもの
+fact_invを1で埋める
+fact_inv#[fact_invの個数-1]=pow((factの末尾),mod-2,mod)
+【i】をnnから1まで減らしながら繰り返す
+	fact_inv#[i-1]=(fact_inv#[i]*i)%mod
+そして
+
+prepared_fft()を{【root:長整数の配列】, 【iroot:長整数の配列】, 【rate2:長整数の配列】, 【irate2:長整数の配列】, 【rate3:長整数の配列】, 【irate3:長整数の配列】}とみなす
+
+inv_K=inv#[K]
+【f】=長整数の配列を作ったもの
+f(N+1)=0
+【i】に0からK-1までカウントして繰り返す
+	f#[i+1]=inv_K
+そして
+【g】=長整数の配列を作ったもの
+g(N)=1
+gを1で埋める
+g(N+1)=0
+【h】=power_projection(f, g, N+1)
+【i】に0からN-1までカウントして繰り返す
+	pymod((h#[i]-h#[i+1]),mod)をコンソールに出力して改行する
+そして
+
+
+binom(n:整数,r:整数)の手順
+	n<rまたはn<0またはr<0なら
+		0を返す
+	そして
+	【res】=(fact_inv#[n-r]*fact_inv#[r])%mod
+	res=res*fact#[n]
+	res=res%mod
+	resを返す
+終わり
+
+NTT_info(mod:整数)の手順:長整数の配列
+	modが998244353なら{23, 31}を返す
+	{0, -1}を返す
+終わり
+
+topbit(n)の手順:整数
+	【h】=nの二進数の文字数
+	h-1を返す
+終わり
+
+prepared_fft()の手順
+	【info】=NTT_info(mod)
+	【rank2:整数】=info#[0]
+	【root】=長整数の配列(30)を作ったもの
+	【iroot】=長整数の配列(30)を作ったもの
+	【rate2】=長整数の配列(30)を作ったもの
+	【irate2】=長整数の配列(30)を作ったもの
+	【rate3】=長整数の配列(30)を作ったもの
+	【irate3】=長整数の配列(30)を作ったもの
+
+	root#[rank2]=info#[1]
+	iroot#[rank2]=pow((root#[rank2]), mod-2, mod)
+	【i:整数】をrank2-1から0まで減らしながら繰り返す
+		root#[i]=(root#[i+1]*root#[i+1])%mod
+		iroot#[i]=(iroot#[i+1]*iroot#[i+1])%mod
+	そして
+
+	【prod】=1
+	【iprod】=1
+	【i:整数】を0から(rank2-1)-1まで増やしながら繰り返す
+		rate2#[i]=(root#[i+2]*prod)%mod
+		irate2#[i]=(iroot#[i+2]*iprod)%mod
+		prod=(prod*iroot#[i+2])%mod
+		iprod=(iprod*root#[i+2])%mod
+	そして
+	
+	prod=1
+	iprod=1
+	【i:整数】に0から(rank2-2)-1までカウントして繰り返す
+		rate3#[i]=(root#[i+3]*prod)%mod
+		irate3#[i]=(iroot#[i+3]*iprod)%mod
+		prod=(prod*iroot#[i+3])%mod
+		iprod=(iprod*root#[i+3])%mod
+	そして
+
+	{root, iroot, rate2, irate2, rate3, irate3}を返す
+終わり
+
+【a:長整数の配列】を【inverse:整数】でnttする手順
+	【n】=(aの個数)
+	【h:整数】=topbit(n)
+	inverseが0なら
+		【le】=0
+		le<hの間、繰り返す
+			h-leが1なら
+				【p:長整数】=1 << (h-le-1)
+				【rot:長整数】=1
+				【s】に0から(1 << le)-1までカウントして繰り返す
+					【offset】=s << (h-le)
+					【i】に0からp-1までカウントして繰り返す
+						【l】=a#[i+offset]
+						【r】=pymod((a#[i+offset+p]*rot),mod)
+						a#[i+offset]=(l+r)%mod
+						a#[i+offset+p]=pymod(l-r,mod)
+					そして
+					rot=pymod((rot*rate2#[topbit((~s)∧-(~s))]),mod)
+				そして
+				le=le+1
+			他なら
+				【p:長整数】=1 << (h-le-2)
+				【rot:長整数】=1
+				【imag:長整数】=root#[2]
+				【s】に0から(1 << le)-1までカウントして繰り返す
+					【rot2】=(rot*rot)%mod
+					【rot3】=(rot2*rot)%mod
+					【offset】=s << (h-le)
+					【i】に0からp-1までカウントして繰り返す
+						【a0】=a#[i+offset]
+						【a1】=a#[i+offset+p]*rot
+						【a2】=a#[i+offset+p*2]*rot2
+						【a3】=a#[i+offset+p*3]*rot3
+						【a1na3imag】=pymod((a1-a3),mod)*imag
+						a#[i+offset]=pymod((a0+a2+a1+a3),mod)
+						a#[i+offset+p]=pymod((a0+a2-a1-a3),mod)
+						a#[i+offset+p*2]=pymod((a0-a2+a1na3imag),mod)
+						a#[i+offset+p*3]=pymod((a0-a2-a1na3imag),mod)
+					そして
+					rot=pymod((rot*rate3#[topbit((~s)∧-(~s))]),mod)
+				そして
+				le=le+2
+			そして
+		そして
+	他なら
+		【coef】=pow(n, mod-2, mod)
+		【i】に0からn-1までカウントして繰り返す
+			a#[i]=(a#[i]*coef)%mod
+		そして
+		【le】=h
+		le>0の間、繰り返す
+			leが1なら
+				p=1 << (h-le)
+				【irot:長整数】=1
+				【s】に0から(1 << (le-1))-1までカウントして繰り返す
+					【offset】=s << (h-le+1)
+					【i】に0からp-1までカウントして繰り返す
+						【l】=a#[i+offset]
+						【r】=a#[i+offset+p]
+						a#[i+offset]=pymod((l+r),mod)
+						a#[i+offset+p]=pymod(((l-r)*irot),mod)
+					そして
+					irot=pymod((irot*irate2#[topbit((~s)∧-(~s))]),mod)
+				そして
+				le=le-1
+			他なら
+				【p】=1 << (h-le)
+				【irot:長整数】=1
+				【iimag:長整数】=iroot#[2]
+				【s】に0から(1 << (le-2))-1までカウントして繰り返す
+					【irot2】=pymod((irot*irot),mod)
+					【irot3】=pymod((irot2*irot),mod)
+					【offset】=s << (h-le+2)
+					【i】に0からp-1までカウントして繰り返す
+						【a0】=a#[i+offset]
+						【a1】=a#[i+offset+p]
+						【a2】=a#[i+offset+p*2]
+						【a3】=a#[i+offset+p*3]
+						【a2na3iimag】=pymod((a2-a3)*iimag,mod)
+						a#[i+offset]=pymod(a0+a1+a2+a3,mod)
+						a#[i+offset+p]=pymod((a0-a1+a2na3iimag)*irot,mod)
+						a#[i+offset+p*2]=pymod((a0+a1-a2-a3)*irot2,mod)
+						a#[i+offset+p*3]=pymod((a0-a1-a2na3iimag)*irot3,mod)
+					そして
+					irot=irot*irate3#[topbit((~s)∧-(~s))]
+					irot=pymod(irot,mod)
+				そして
+				le=le-2
+			そして
+		そして
+	そして
+終わり
+
+convolute_naive(a:長整数の配列, b:長整数の配列)の手順
+	【res】=長整数の配列((aの個数)+(bの個数)-1)を作ったもの
+	【i】に0から(aの個数)-1までカウントして繰り返す
+		【j】に0から(bの個数)-1までカウントして繰り返す
+			res#[i+j]=(res#[i+j]+(a#[i]*b#[j])%mod)%mod
+		そして
+	そして
+	resを返す
+終わり
+
+convolute(a:長整数の配列, b:長整数の配列)の手順:長整数の配列
+	【s:長整数の配列】=aのクローン
+	【t:長整数の配列】=bのクローン
+	【n】=sの個数
+	【m】=tの個数
+	(nとmで小さい方) <= 60なら
+		convolute_naive(s, t)を返す
+	そして
+	【le】=1
+	le<n+m-1の間、繰り返す
+		le=le*2
+	そして
+	sに[長整数の配列(le-n)を作ったもの]を一括追加
+	tに[長整数の配列(le-m)を作ったもの]を一括追加
+	sを0でnttする
+	tを0でnttする
+	【i】に0からle-1までカウントして繰り返す
+		s#[i]=(s#[i]*t#[i])%mod
+	そして
+	sを1でnttする
+	s=sの1番目からn+m個切り出したもの
+	sを返す
+終わり
+
+power_projection(f:長整数の配列, wt:長整数の配列, m:整数)の手順:長整数の配列
+	(fの個数)が0なら
+		長整数の配列(m+1)を作って返す
+	そして
+
+	f#[0]が0でなければ	
+		【c】=f#[0]
+		f#[0]=0
+		【A】=power_projection(f, wt, m)
+		f#[0]=c
+		【p】に0からm-1までカウントして繰り返す
+			A#[p]=(A#[p]*fact_inv#[p])%mod
+		そして
+		【B】=[長整数の配列(m)を作ったもの]
+		【Pow1】=1
+		【q】に0からm-1までカウントして繰り返す
+			B#[q]=(Pow1*fact_inv#[q])%mod
+			Pow1=(Pow1*c)%mod
+		そして
+		A=convolute(A, B)
+		(Aの個数)>mの間、繰り返す
+			Aから(Aの個数)番目を消す
+		そして
+		【i】に0からm-1までカウントして繰り返す
+			A#[i]=(A#[i]*fact#[i])%mod
+		そして
+		Aを返す
+	そして
+
+
+	【nn】=1
+	【log】=1
+	nn<(fの個数)の間、繰り返す
+		nn=nn*2
+		log=log+1
+	そして
+	nn-(fの個数)回、繰り返す
+		fに0を加える
+		wtに0を加える
+	そして
+	wtを逆に並べ替る
+
+	【btr】=[長整数の配列(2*nn)を作ったもの]
+	【i】に0から2*nn-1までカウントして繰り返す
+		btr#[i]=(btr#[i >> 1] >> 1)+((i∧1) << (log-1))
+	そして
+	【W】=[長整数の配列(2*nn)を作ったもの]
+	【info】=NTT_info(mod)
+	【t】=info(1)
+	【r】=info(2)
+
+	【dw】=pow(powinv(r, mod), (1 << t)￥(4*nn), mod)
+	【ww】=1
+	【ii】に1からbtrの個数までカウントして繰り返す
+		【i】=btr(ii)
+		W#[i]=ww
+		ww=(ww*dw)%mod
+	そして
+
+	【kk】=1
+	【P】=長整数の配列を作ったもの
+	P(2*nn)=0
+	【Q】=長整数の配列を作ったもの
+	Q(2*nn)=0
+	【i】に0からnn-1までカウントして繰り返す
+		P#[i]=wt#[i]
+		Q#[i]=(mod-f#[i])%mod
+	そして
+
+	【inv_2:長整数】=(mod+1)￥2
+
+	nn>1の間、繰り返す
+		【i】に0から2*nn*kk-1までカウントして繰り返す
+			Pに0を加える
+			Qに0を加える
+		そして
+		Q#[2*nn*kk]=1
+		Pを0でnttする
+		Qを0でnttする
+		【i】に0から2*nn*kk-1までカウントして繰り返す
+			P#[i]=pymod(P#[2*i]*Q#[2*i+1]-pymod((P#[2*i+1]*Q#[2*i]),mod),mod)
+			P#[i]=pymod(P#[i]*pymod((inv_2*W#[i]),mod),mod)
+			Q#[i]=pymod((Q#[2*i]*Q#[2*i+1]),mod)
+		そして
+		【i】に0から2*nn*kk-1までカウントして繰り返す
+			Pから(Pの個数)番目を消す
+			Qから(Qの個数)番目を消す
+		そして
+		Pを1でnttする
+		Qを1でnttする
+		【j】に0から2*kk-1までカウントして繰り返す
+			【i】にnn￥2からnn-1までカウントして繰り返す
+				P#[nn*j+i]=0
+				Q#[nn*j+i]=0
+			そして
+		そして
+		Q#[0]=0
+		nn=nn￥2
+		kk=kk*2
+	そして
+
+	【p1】=長整数の配列を作ったもの
+	p1(kk)=0
+	【i】に0からkk-1までカウントして繰り返す
+		p1#[i]=P#[2*i]
+	そして
+	p1を逆に並べ替る
+	m-(p1の個数)回繰り返す
+		p1に0を加える
+	そして
+	(p1の個数)>mの間、繰り返す
+		p1から(p1の個数)番目を消す
+	そして
+	p1を返す
+終わり
+
+pow(value:長整数,exp:整数,mod:整数)の手順:長整数
+	【結果:長整数】=1
+	exp>0の間繰り返す
+		(exp∧1)が1なら結果=(結果*value)%mod
+		value=(value*value)%mod
+		exp=exp>>1
+	そして
+	結果を返す
+終わり
+powinv(value:長整数,mod:整数)の手順:長整数
+	【結果:長整数】=1
+	【exp:長整数】=mod-2
+	exp>0の間繰り返す
+		(exp∧1)が1なら結果=(結果*value)%mod
+		value=(value*value)%mod
+		exp=exp>>1
+	そして
+	結果を返す
+終わり
+pymod(a:長整数,b:整数)の手順:長整数
+	aが0以上なら
+		a%bを返す
+	他なら
+		(b+a%b)%bを返す
+	そして
+終わり
+
+【A:整数】と【B:整数】で小さい方の手順
+	AがBより小さければAを返す
+	Bを返す
+終わり

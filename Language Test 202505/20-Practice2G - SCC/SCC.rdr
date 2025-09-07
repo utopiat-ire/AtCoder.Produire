@@ -1,0 +1,123 @@
+//https://github.com/utopiat-ire/AtCoder.Produire
+※コンパイル
+※コンソール
+コンソールから受け取って「 」で区切って{【N:整数】,【M:整数】}とみなす
+
+sccとして強連結成分グラフ(N,M)を作る
+M回繰り返す
+	コンソールから受け取って「 」で区切って{【U:整数】,【V:整数】}とみなす
+	scc:UからVへ頂点追加する
+そして
+
+結果=scc:頂点リスト
+結果の個数をコンソールに出力して改行する
+結果を【要素:配列】にそれぞれ繰り返す
+	「[要素の個数] [要素を「 」で繋げたもの]」をコンソールに出力して改行する
+そして
+
+強連結成分グラフとは
+	-N:整数
+	-edges:整数の配列の固定長配列
+	-頂点数:整数
+	-start:整数の固定長配列
+	-elist:整数の固定長配列
+
+	はじめ(N,M)の手順
+		このNは、N
+		edges=整数の配列の配列(M)を作ったもの
+	終わり
+
+	【from:整数】から【to:整数】へ頂点追加する手順
+		頂点数を増やす
+		edges(頂点数)={from, to}
+	終わり
+
+	再構成する手順
+		startという整数の配列(N+1)を作る
+		【counter:整数の固定長配列】という整数の配列(N+1)を作る
+		edgesを【e:整数の配列】にそれぞれ繰り返す
+			start#[(e#0)+1]=(start#[(e#0)+1])+1
+		そして
+		【辺数】=0
+		【i】に1からNまで繰り返す
+			start#iは(start#i)+(start#[i-1])
+			counter#iは(start#i)
+			辺数が(counter#i)より小さければ辺数=(counter#i)
+		そして
+		elistという整数の配列(辺数)を作る
+		edgesを【e:整数の配列】にそれぞれ繰り返す
+			elist#[counter#(e#0)]=(e#1)
+			counter#(e#0)=(counter#(e#0))+1
+		そして
+	終わり
+
+	-visited:整数のスタック
+	-ord:整数の固定長配列
+	-low:整数の固定長配列
+	-ids:整数の固定長配列
+	-【v:整数】を →【now_ord:整数】と→【group_num:整数】でdfsする手順
+		low#v=now_ord
+		ord#v=now_ord
+		now_ord=now_ord+1
+		visitedへvを積む
+		【i】をstart#vから(start#[v+1])-1まで増やしながら繰り返す
+			【to】=(elist#i)
+			ord#to=-1なら
+				toをnow_ordとgroup_numでdfsする
+				low#vがlow#toより大きければ、low#v=(low#to)
+			他なら
+				low#vがord#toより大きければ、low#(v)=(ord#to)
+			そして
+		そして
+		low#v=(ord#v)なら
+			繰り返す
+				【u:整数】=visitedから取り出す
+				ord#u=N
+				ids#u=group_num
+				u=vなら
+					出る
+				そして
+			そして
+			group_num=group_num+1
+		そして
+	終わり
+	強連結成分を求める手順:配列
+		再構成する
+		【now_ord】=0
+		【group_num:整数】=0
+		visitedという整数のスタックを作る
+		lowという整数の配列(N)を作る
+		idsという整数の配列(N)を作る
+		ordという整数の配列(N)を作る
+		【i】に1からNまで繰り返す
+			ord(i)=-1
+		そして
+		【i:整数】に0からN-1まで繰り返す
+			ord#i=-1なら
+				iをnow_ordとgroup_numでdfsする
+			そして
+		そして
+		【番号】に1からidsの個数まで繰り返す
+			ids(番号)=group_num-1-ids(番号)
+		そして
+		{group_num, ids}を返す
+	終わり
+
+	頂点リストを求める手順:配列
+		【結果:配列】=強連結成分
+		【group_num:整数】=結果(1)
+		【ids:整数の配列】=結果(2)
+		【counts】という整数の配列(group_num)を作る
+		【groups】という整数の配列の配列(group_num)を作る
+		【番号】に1からgroup_numまで繰り返す
+			groups(番号)={}
+		そして
+		idsを【x:整数】にそれぞれ繰り返す
+			counts#x=(counts#x)+1
+		そして
+		【i】に0からN-1まで繰り返す
+			(groups#(ids#i))の1番目にiを挿入する
+		そして
+		groupsを返す
+	終わり
+終わり
